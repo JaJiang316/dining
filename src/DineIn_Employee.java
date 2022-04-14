@@ -5,7 +5,7 @@ public class DineIn_Employee implements Runnable {
     private String id;
 
     public DineIn_Employee(String id, long time) {
-        setName(id);
+        setName("Dinein_Employee " + id);
         this.thread = new Thread(this, id);
         this.time = time;
     }

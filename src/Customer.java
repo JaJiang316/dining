@@ -1,10 +1,9 @@
-import java.math.*;
-
 public class Customer implements Runnable {
     private String id;
     private Thread thread;
     private long time;
     private volatile boolean served;
+    private boolean available = false;
 
     public Customer(String id, long time) {
         setName("Customer " + id);
@@ -15,7 +14,6 @@ public class Customer implements Runnable {
     @Override
     public void run() {
         int commute = getCommute();
-        setServed(false);
         try {
             Thread.sleep(commute);
             msg("has finished commuting to diner");
@@ -26,21 +24,21 @@ public class Customer implements Runnable {
         int order = 1;
         if (order <= 2) {
             getOnLine(order);
-        }
-        while (getServed() == false) {
-            try {
-                Thread.sleep(1000);
-                msg("is waiting for Employee to finish order");
-            } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+            while (available == false) {
+                try {
+                    if (thread.isInterrupted()) {
+                        available = true;
+                    } else {
+                        Thread.sleep(1000);
+                        msg("is waiting for Employee to finish order");
+                    }
+                } catch (InterruptedException e) {
+                }
             }
-        }
-        if (served) {
             try {
                 Main.left.getAndIncrement();
                 Thread.sleep(getCommute()); // paying for the order
-                msg("has paid finished picking up and is leaving");
+                msg("has paid and has finished picking up and is leaving");
             } catch (InterruptedException e) {
             }
         }
@@ -79,13 +77,20 @@ public class Customer implements Runnable {
         return served;
     }
 
+    public void setAvailable(boolean available) {
+        this.available = available;
+    }
+
     public void getOnLine(int order) {
         msg("has decided to pick up and got on line.");
-        try {
-            Thread.sleep(order);
-            Pickup_Employee.line.add(this);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        Pickup_Employee.line.add(this);
+    }
+
+    public boolean isAlive() {
+        if (thread.isAlive()) {
+            return true;
+        } else {
+            return false;
         }
     }
 
