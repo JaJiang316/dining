@@ -8,7 +8,7 @@ public class Pickup_Employee implements Runnable {
     public static Queue<Customer> line;
 
     public Pickup_Employee(String id, long time) {
-        setName(id);
+        setName("Pickup_Employee: " + id);
         this.thread = new Thread(this, id);
         this.time = time;
     }
@@ -22,14 +22,14 @@ public class Pickup_Employee implements Runnable {
             if (!line.isEmpty()) {
                 Customer c = line.poll();
                 try {
-                    Thread.sleep(prepareOrder());
-                    msg("Pickup Employee " + id + " has finished preparing order");
+                    Thread.sleep(prepareOrder()); // works on order
+                    msg("has finished preparing order");
                     // c.interrupt();
                 } catch (InterruptedException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-                msg("Pickup Employee " + id + " gave bills and order to Customer " + c.getName());
+                msg("gave bills and order to Customer " + c.getName());
                 c.setServed(true);
                 // c.interrupt();
             }

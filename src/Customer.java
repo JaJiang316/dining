@@ -4,10 +4,10 @@ public class Customer implements Runnable {
     private String id;
     private Thread thread;
     private long time;
-    private boolean served;
+    private volatile boolean served;
 
     public Customer(String id, long time) {
-        setName(id);
+        setName("Customer " + id);
         this.thread = new Thread(this, id);
         this.time = time;
     }
@@ -18,10 +18,10 @@ public class Customer implements Runnable {
         setServed(false);
         try {
             Thread.sleep(commute);
-            msg("Customer " + id + " has finished commuting to diner");
+            msg("has finished commuting to diner");
         } catch (InterruptedException e) {
         }
-        msg("Customer " + id + " has decided to order");
+        msg("has decided to order");
         // int order = getOrder();
         int order = 1;
         if (order <= 2) {
@@ -30,6 +30,7 @@ public class Customer implements Runnable {
         while (getServed() == false) {
             try {
                 Thread.sleep(1000);
+                msg("is waiting for Employee to finish order");
             } catch (InterruptedException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -38,8 +39,8 @@ public class Customer implements Runnable {
         if (served) {
             try {
                 Main.left.getAndIncrement();
-                Thread.sleep(getCommute());
-                msg("Customer " + getName() + " has paid finished picking up");
+                Thread.sleep(getCommute()); // paying for the order
+                msg("has paid finished picking up and is leaving");
             } catch (InterruptedException e) {
             }
         }
@@ -79,13 +80,16 @@ public class Customer implements Runnable {
     }
 
     public void getOnLine(int order) {
-        msg("Customer " + id + " has decided to pick up");
-        msg("Customer " + id + " is picking up and got on line.");
+        msg("has decided to pick up and got on line.");
         try {
             Thread.sleep(order);
             Pickup_Employee.line.add(this);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    public void interrupt() {
+        thread.interrupt();
     }
 }
