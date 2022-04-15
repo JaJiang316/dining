@@ -40,13 +40,13 @@ public class Pickup_Employee implements Runnable {
                 occupied = true;
             }
         }
-        while (Main.customers[0].isAlive()) {
-            try {
-                Thread.sleep(5000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
+        // while (Main.customers[0].isAlive()) {
+        // try {
+        // Thread.sleep(5000);
+        // } catch (InterruptedException e) {
+        // e.printStackTrace();
+        // }
+        // }
         while (Main.left.get() != Main.numCustomers) {
             try {
                 Thread.sleep(1000);

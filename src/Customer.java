@@ -4,6 +4,11 @@ public class Customer implements Runnable {
     private long time;
     private volatile boolean served;
     private boolean available = false;
+    private boolean isOrdering = false;
+    private boolean seated = false;
+    private boolean eat = false;
+    private boolean eating = false;
+    private boolean paying = false;
 
     public Customer(String id, long time) {
         setName("Customer " + id);
@@ -21,9 +26,9 @@ public class Customer implements Runnable {
         }
         msg("has decided to order");
         // int order = getOrder();
-        int order = 1;
+        int order = 3;
         if (order <= 2) {
-            getOnLine(order);
+            getOnLine();
             while (available == false) {
                 try {
                     if (thread.isInterrupted()) {
@@ -41,7 +46,76 @@ public class Customer implements Runnable {
                 msg("has paid and has finished picking up and is leaving");
             } catch (InterruptedException e) {
             }
+        } else { // customer chooses to dinein
+            dineIn();
+            while (!seated) {
+                try {
+                    if (thread.isInterrupted()) {
+                        seated = true;
+                    } else {
+                        Thread.sleep(1000);
+                        msg("is waiting for Employee to seat");
+                    }
+                } catch (InterruptedException e) {
+                    System.out.println("seated Thread interrupted");
+                }
+            }
+            Thread.currentThread().setPriority(10);
+            try {
+                msg("is deciding on what to eat");
+                Thread.sleep((long) (Math.random() * 1000));
+            } catch (InterruptedException e) {
+            }
+            Thread.currentThread().setPriority(5);
+            msg("has decided on what to eat");
+            isOrdering = true;
+            while (!eat) {
+                try {
+                    if (thread.isInterrupted()) {
+                        System.out.println("hello");
+                        eat = true;
+                    } else {
+                        Thread.sleep(1000);
+                        msg("is waiting for their order to be served");
+                    }
+                } catch (InterruptedException e) {
+                    System.out.println("eat Thread interrupted");
+                }
+            }
+            while (!eating) {
+                try {
+                    if (thread.isInterrupted()) {
+                        eating = true;
+                        msg("is eating their food");
+                        Thread.sleep((long) (Math.random() * 1000));
+                        Thread.yield();
+                        Thread.yield();
+                    } else {
+                        Thread.sleep(1000);
+                    }
+                } catch (InterruptedException e) {
+                    System.out.println("eating Thread interrupted");
+                }
+            }
+            while (!paying) {
+                try {
+                    if (thread.isInterrupted()) {
+                        paying = true;
+                        msg("has paid and is now leaving");
+                        Main.left.getAndIncrement();
+                    } else {
+                        Thread.sleep(2000);
+                    }
+                } catch (InterruptedException e) {
+                }
+            }
+
         }
+    }
+
+    public void dineIn() {
+        msg("has decided to dine in and got on line.");
+        Main.dineLine.add(this);
     }
 
     public void msg(String m) {
@@ -61,6 +135,10 @@ public class Customer implements Runnable {
         return id;
     }
 
+    public boolean getPaying() {
+        return paying;
+    }
+
     public int getOrder() {
         return (int) Math.floor(Math.random() * 10 + 1);
     }
@@ -77,11 +155,31 @@ public class Customer implements Runnable {
         return served;
     }
 
+    public boolean isOrdering() {
+        return isOrdering;
+    }
+
+    public void setEating(boolean eating) {
+        this.eating = eating;
+    }
+
+    public boolean getEating() {
+        return eating;
+    }
+
+    public void setSeated() {
+        this.seated = true;
+    }
+
+    public void setOrdering(boolean ordering) {
+        this.isOrdering = ordering;
+    }
+
     public void setAvailable(boolean available) {
         this.available = available;
     }
 
-    public void getOnLine(int order) {
+    public void getOnLine() {
         msg("has decided to pick up and got on line.");
         Pickup_Employee.line.add(this);
     }
