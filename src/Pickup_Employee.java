@@ -8,6 +8,7 @@ public class Pickup_Employee implements Runnable {
     public static Queue<Customer> line = new LinkedBlockingQueue<Customer>(Main.numCustomers);
     private static Customer c;
     private volatile boolean occupied = true;
+    public boolean done = false;
 
     public Pickup_Employee(String id, long time) {
         setName("Pickup_Employee " + id);
@@ -17,13 +18,11 @@ public class Pickup_Employee implements Runnable {
 
     @Override
     public void run() {
-        // TODO Auto-generated method stub
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
         }
         while (!line.isEmpty()) {
-            // System.out.println(line.toString());
             if (occupied) {
                 occupied = false;
                 c = (Customer) line.remove();
@@ -32,7 +31,6 @@ public class Pickup_Employee implements Runnable {
                     Thread.sleep(prepareOrder()); // works on order
                     msg("has finished preparing order");
                 } catch (InterruptedException e) {
-                    // TODO Auto-generated catch block
                 }
                 msg("gave bills and order to " + c.getName());
                 c.setAvailable(true);
@@ -40,13 +38,6 @@ public class Pickup_Employee implements Runnable {
                 occupied = true;
             }
         }
-        // while (Main.customers[0].isAlive()) {
-        // try {
-        // Thread.sleep(5000);
-        // } catch (InterruptedException e) {
-        // e.printStackTrace();
-        // }
-        // }
         while (Main.left.get() != Main.numCustomers) {
             try {
                 Thread.sleep(1000);
@@ -55,6 +46,11 @@ public class Pickup_Employee implements Runnable {
             }
         }
         msg("has finished serving all customers and is leaving");
+        done = true;
+    }
+
+    public void join() throws InterruptedException {
+        Thread.currentThread().join();
     }
 
     public void setName(String name) {
@@ -75,5 +71,9 @@ public class Pickup_Employee implements Runnable {
 
     public int prepareOrder() {
         return (int) Math.floor(Math.random() * (12 - 8 + 1) + 8);
+    }
+
+    public static boolean isAlive() {
+        return Thread.currentThread().isAlive();
     }
 }

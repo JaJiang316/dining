@@ -1,19 +1,18 @@
 import java.util.ArrayList;
-import java.util.Queue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 public class Table {
 
     private String id;
     private int seats = Main.numSeats;
     private DineIn_Employee assignedEmployee = null;
+    private volatile boolean assigning = true;
     public ArrayList<Customer> customerSeated = new ArrayList<>();
     private static boolean available = true;
-    private static int orders = 0;
-    public static Queue<DineIn_Employee> employeeLine = new LinkedBlockingQueue<DineIn_Employee>(2);
+    private long time;
 
-    public Table(String i) {
+    public Table(String i, long time) {
         setName("Table " + i);
+        this.time = time;
     }
 
     public void setName(String string) {
@@ -30,10 +29,21 @@ public class Table {
             customerSeated.add(c);
             c.setSeated();
         }
+        if (seats == 0) {
+            setNotAvailable();
+        }
     }
 
     public void assignEmployee(DineIn_Employee e) {
-        assignedEmployee = e;
+        while (assigning) {
+            assigning = false;
+            if (assignedEmployee == null) {
+                msg("Assigning " + e.getName() + " to " + this.getName());
+                assignedEmployee = e;
+            } else {
+                msg("Employee " + e.getName() + " is already assigned to " + this.getName());
+            }
+        }
     }
 
     public Object getAssignedEmployee() {
@@ -58,5 +68,13 @@ public class Table {
 
     public void setAvailable() {
         available = true;
+    }
+
+    public boolean getAvailable() {
+        return available;
+    }
+
+    public void msg(String m) {
+        System.out.println("[" + (System.currentTimeMillis() - time) + "] " + getName() + ": " + m);
     }
 }
